@@ -1,5 +1,5 @@
 import unittest
-from san_config import extract_defined_config, extract_effective_config
+from san_config import *
 
 
 class TestSanConfig(unittest.TestCase):
