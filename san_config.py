@@ -25,6 +25,35 @@ def extract_effective_config(config):
     return defined_config
 
 
+def get_alias(config):
+    """Get the aliases out of the effective configuration."""
+
+    aliases = []
+    alias = {}
+
+    # matches starting with alias until next (not greedy) alias or
+    # an empty line, last two conditions would end the search.
+    # In case there is a match the following two groups are expected:
+    # group 1: contains the alias_name
+    # group 2: contains the alias WWPNs
+    # discard some "white spaces" and '\n' to facilitate parsing
+    regex = r'^ alias:\s(\w+)\n\s+(.+?)(^ alias:|\n$)'
+    match = re.search(regex, config, re.M|re.S)
+
+    if not match:
+        return False
+
+    alias_name = match.group(1)
+    wwpns = match.group(2).strip('\n')
+    wwpns = wwpns.replace(' ', '').split('\n')
+
+    alias.update({alias_name: wwpns})
+
+    aliases.append(alias)
+
+    return aliases
+
+
 def main():
     pass
 

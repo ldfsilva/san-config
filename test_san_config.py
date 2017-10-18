@@ -90,3 +90,45 @@ class TestSanConfig(unittest.TestCase):
         effective_config = extract_effective_config(self.config)
 
         self.assertEqual(expected, effective_config)
+
+    def test_alias_regex_match_when_1_alias_1_wwpn(self):
+        """It verifies that the alias regex again't the given content."""
+
+        alias = ''' alias: cdp01_fca_100_i
+                21:00:00:24:ff:3a:3d:3a
+'''
+        expected = [{'cdp01_fca_100_i': ['21:00:00:24:ff:3a:3d:3a']}]
+        aliases = get_alias(alias)
+
+        self.assertListEqual(expected, aliases)
+
+    def test_alias_regex_match_when_1_alias_2_wwpns(self):
+        """It verifies that the alias regex again't the given content."""
+
+        alias = ''' alias: cdp01_fca_100_i
+                21:00:00:24:ff:3a:3d:3a
+                AA:AA:AA:AA:AA:AA:AA:AA
+'''
+        expected = [{'cdp01_fca_100_i': [
+            '21:00:00:24:ff:3a:3d:3a',
+            'AA:AA:AA:AA:AA:AA:AA:AA']}]
+        aliases = get_alias(alias)
+
+        self.assertListEqual(expected, aliases)
+
+    def test_alias_regex_match_when_1_alias_3_wwpns(self):
+        """It verifies that the alias regex again't the given content."""
+
+        alias = ''' alias: cdp01_fca_100_i
+                21:00:00:24:ff:3a:3d:3a
+                AA:AA:AA:AA:AA:AA:AA:AA
+                BB:BB:BB:BB:BB:BB:BB:BB
+'''
+        expected = [{'cdp01_fca_100_i': [
+            '21:00:00:24:ff:3a:3d:3a',
+            'AA:AA:AA:AA:AA:AA:AA:AA',
+            'BB:BB:BB:BB:BB:BB:BB:BB',
+            ]}]
+        aliases = get_alias(alias)
+
+        self.assertListEqual(expected, aliases)
