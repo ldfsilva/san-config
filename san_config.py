@@ -81,8 +81,18 @@ def get_aliases(config):
     return aliases
 
 
+def alias_exist(alias, aliases):
+    """Check if the alias name exist on the defined aliases config."""
+
+    if alias in aliases:
+        return True
+    else:
+        return False
+
+
 def main():
     pass
+
 
 if __name__ == '__main__':
     main()

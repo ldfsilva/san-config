@@ -184,3 +184,19 @@ class TestSanConfig(unittest.TestCase):
         aliases = get_aliases(self.config)
 
         self.assertDictEqual(expected, aliases)
+
+    def test_alias_exist_true(self):
+        """When the alias is found on the config it has to return True."""
+
+        aliases = get_aliases(self.config)
+        response = alias_exist('cdp01_fca_100_i', aliases)
+
+        self.assertTrue(response)
+
+    def test_alias_exist_false(self):
+        """When the alias is not found on the config it has to return False."""
+
+        aliases = get_aliases(self.config)
+        response = alias_exist('does_not_exist', aliases)
+
+        self.assertFalse(response)
