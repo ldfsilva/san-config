@@ -25,38 +25,64 @@ def extract_effective_config(config):
     return defined_config
 
 
-def get_alias(config):
-    """Get the aliases out of the effective configuration."""
+def extract_alias_config(defined_config):
+    """Extract alias configuration block out the defined configuration."""
 
-    aliases = []
-    alias = {}
+    regex = '(^ alias.*?\n)$'
+    match = re.search(regex, defined_config, re.M|re.S)
 
-    # matches starting with alias until next (not greedy) alias or
-    # an empty line, last two conditions would end the search.
-    # In case there is a match the following two groups are expected:
-    # group 1: contains the alias_name
-    # group 2: contains the alias WWPNs
-    # discard some "white spaces" and '\n' to facilitate parsing
-    regex = r'^ alias:\s(\w+)\n\s+(.+?)(^ alias:|\n$)'
-    match = re.search(regex, config, re.M|re.S)
+    return match.group(1)
 
-    if not match:
-        return False
 
-    alias_name = match.group(1)
-    wwpns = match.group(2).strip('\n')
-    wwpns = wwpns.replace(' ', '').split('\n')
+def parse_alias(alias):
+    """Parse an alias string and return it as a dictionary.
 
-    alias.update({alias_name: wwpns})
+    Input:
+    alias01
+        AA:AA:AA:AA:AA:AA:AA:AA
+        BB:BB:BB:BB:BB:BB:BB:BB
 
-    aliases.append(alias)
+    Output:
+    {'alias01': [
+        'AA:AA:AA:AA:AA:AA:AA:AA',
+        'BB:BB:BB:BB:BB:BB:BB:BB',
+    ]}
+    """
+
+    # Clean up the string and split values onto a list
+    alias = alias.strip('\n').replace(' ', '')
+    alias = alias.split('\n')
+    # Alias name is contained in the first element of the list
+    alias_name = alias[0]
+    # All elements but first will be WWPNs for that alias
+    wwpns = alias[1:]
+
+    return {alias_name: wwpns}
+
+
+def get_aliases(config):
+    """Get all aliases of the given SAN configuration and returns them as a
+    dictionary with their respective WWPNs.
+    """
+
+    aliases = {}
+    # Extract the defined configuration
+    defined_config = extract_defined_config(config)
+    # Extract the section containing the aliases
+    alias_block = extract_alias_config(defined_config)
+
+    # Separate each alias onto an item of a list and proceed with parsing
+    # discard the first element as there is no need to build the original
+    # content back
+    match = re.split(' alias: ', alias_block)
+    for alias in match[1:]:
+        aliases.update(parse_alias(alias))
 
     return aliases
 
 
 def main():
     pass
-
 
 if __name__ == '__main__':
     main()
