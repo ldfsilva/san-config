@@ -50,7 +50,7 @@ def parse_alias(alias):
     """
 
     # Clean up the string and split values onto a list
-    alias = alias.strip('\n').replace(' ', '')
+    alias = alias.strip('\n').replace(' ', '').replace('\t', '')
     alias = alias.split('\n')
     # Alias name is contained in the first element of the list
     alias_name = alias[0]
@@ -74,7 +74,8 @@ def get_aliases(config):
     # Separate each alias onto an item of a list and proceed with parsing
     # discard the first element as there is no need to build the original
     # content back
-    match = re.split(' alias: ', alias_block)
+    match = re.split(' alias:\s+', alias_block)
+
     for alias in match[1:]:
         aliases.update(parse_alias(alias))
 
