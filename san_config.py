@@ -1,4 +1,36 @@
 import re
+import argparse
+import paramiko
+from getpass import getpass
+from datetime import datetime
+
+
+def get_config(switchname, username, password):
+    """Get the SAN configuration from the remote SAN switch."""
+
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(hostname=switchname, username=username, password=password)
+    command = 'cfgshow\n'
+    stdin, stdout, stderr = client.exec_command(command)
+    config = stdout.read()
+
+    return config
+
+
+def save_config(switchname, config):
+    """Save SAN configuration onto a file."""
+
+    # build the file name
+    now = datetime.now()
+    timestamp = now.strftime('%Y%m%d-%H%M%S')
+    filename = 'sanconfig_%s_%s.bckup' % (switchname, timestamp)
+
+    with open(filename, 'w') as fp:
+        fp.write(config)
+
+    print('Configuration saved at %s' % filename)
 
 
 def extract_defined_config(config):
@@ -92,7 +124,26 @@ def alias_exist(alias, aliases):
 
 
 def main():
-    pass
+    parser = argparse.ArgumentParser(
+        prog='san_config',
+        description='A python script for managing SAN configurations.')
+
+    # login arguments
+    parser.add_argument('--switchname', '-s', required=True,
+        help='SAN switch hostname/IP address')
+    parser.add_argument('--username', '-u', required=True, help='Username')
+    parser.add_argument('--password', '-p', help='Password')
+
+    # action arguments
+    parser.add_argument('--backup', '-b', action='store_true',
+        help='Backup the current SAN configuration to a file.')
+
+    args = parser.parse_args()
+    password = args.password or getpass("Provide %s's password: " % args.username)
+
+    if args.backup:
+        config = get_config(args.switchname, args.username, password)
+        save_config(args.switchname, config)
 
 
 if __name__ == '__main__':
